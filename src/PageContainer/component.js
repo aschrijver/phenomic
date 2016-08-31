@@ -77,10 +77,11 @@ function adjustCurrentUrl(location: Object, item: Object, props: Props): void {
 }
 
 function getLayout(
-  layout: string, props: Props
+  layout: string,
+  layouts: { [key: string]: ReactClass<any> },
 ): ReactClass<any> | void {
-  if (props.layouts && props.layouts[layout]) {
-    return props.layouts[layout]
+  if (layouts && layouts[layout]) {
+    return layouts[layout]
   }
 }
 
@@ -103,7 +104,7 @@ class PageContainer extends Component<DefaultProps, Props, void> {
   constructor(props: Props) {
     super(props)
 
-    if (!getLayout(props.defaultLayout, props)) {
+    if (!getLayout(props.defaultLayout, props.layouts)) {
       props.logger.error(
         "phenomic: PageContainer: " +
         `default layout "${ props.defaultLayout }" not provided. `
@@ -186,7 +187,7 @@ class PageContainer extends Component<DefaultProps, Props, void> {
         return
       }
 
-      const Layout = getLayout(page.type, props)
+      const Layout = getLayout(page.type, props.layouts)
       if (page.type !== undefined && !Layout) {
         props.logger.error(
           "phenomic: PageContainer: " +
@@ -204,37 +205,53 @@ class PageContainer extends Component<DefaultProps, Props, void> {
 
   render() {
     const { props } = this
+    const {
+      defaultLayout,
+      layouts,
+      pages,
+      params,
+      logger,
 
-    const pageUrl = splatToUrl(props.params.splat)
-    const page = props.pages[pageUrl]
+      // extract all known props,
+      // to get a "clean" `otherProps` value
+      /* eslint-disable no-unused-vars */
+      getPage,
+      setPageNotFound,
+      /* eslint-enable no-unused-vars */
+
+      ...otherProps,
+    } = props
+
+    const pageUrl = splatToUrl(params.splat)
+    const page = pages[pageUrl]
 
     if (!page) {
       if (isDevelopmentClient()) {
-        props.logger.info(`phenomic: PageContainer: '${ pageUrl }' no data`)
+        logger.info(`phenomic: PageContainer: '${ pageUrl }' no data`)
       }
       return null
     }
     if (isDevelopmentClient()) {
-      props.logger.info(`phenomic: PageContainer: '${ pageUrl }'`, page)
+      logger.info(`phenomic: PageContainer: '${ pageUrl }'`, page)
     }
 
     if (
       typeof page !== "object" ||
       page.toString() !== "[object Object]"
     ) {
-      props.logger.info(
+      logger.info(
         `phenomic: PageContainer: page ${ pageUrl } should be an object`
       )
       return null
     }
 
-    const PageLoading = getLayout("PageLoading", props)
-    const PageError = getLayout("PageError", props)
-    const LayoutFallback = getLayout(props.defaultLayout, props)
-    const Layout = getLayout(page.type, props) || LayoutFallback
+    const PageLoading = getLayout("PageLoading", layouts)
+    const PageError = getLayout("PageError", layouts)
+    const LayoutFallback = getLayout(defaultLayout, layouts)
+    const Layout = getLayout(page.type, layouts) || LayoutFallback
 
     return (
-      <div>
+      <div { ...otherProps }>
         {
           !page.error && page.loading && PageLoading &&
           <PageLoading />

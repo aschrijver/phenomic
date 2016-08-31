@@ -1,5 +1,8 @@
 # HEAD
 
+- Added: ability to pass Props to ``PageContainer`` DOM element
+  (@MoOx, based on @DavidWells [idea](https://github.com/MoOx/phenomic/pull/690))
+
 # 0.16.2 - 2016-08-23
 
 - Fixed: error during static build have an accurate stack trace.

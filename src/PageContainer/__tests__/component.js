@@ -154,3 +154,30 @@ test("should render a another page layout if defaultLayout is used", () => {
     </div>
   )
 })
+
+test("should allow to pass Props", () => {
+  const renderer = createRenderer()
+  renderer.render(
+    jsx(
+      PageContainer,
+      {
+        params: { splat: "" },
+        pages: { "/": {} },
+        getPage: noop,
+        setPageNotFound: noop,
+        defaultLayout: "AnotherPage",
+        layouts: { AnotherPage },
+        className: "test",
+      }
+    ),
+    {
+      collection: [],
+    },
+  )
+
+  expect(renderer.getRenderOutput()).toEqualJSX(
+    <div className="test">
+      <AnotherPage ref={ function noRefCheck() {} } />
+    </div>
+  )
+})
