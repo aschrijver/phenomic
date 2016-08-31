@@ -3,7 +3,7 @@
 import React, { Component, PropTypes } from "react"
 import { findDOMNode } from "react-dom"
 
-import urlify from "../_utils/urlify"
+import urlify from "../../_utils/urlify"
 
 type DefaultProps = {
   defaultLayout: string,
@@ -37,8 +37,8 @@ let catchLinks
 let browserHistory
 
 if (isClient()) {
-  catchLinks = require("../_utils/catch-links").default
-  browserHistory = require("../client").browserHistory
+  catchLinks = require("../../_utils/catch-links").default
+  browserHistory = require("../../client").browserHistory
 }
 
 function find(
@@ -233,29 +233,27 @@ class PageContainer extends Component<DefaultProps, Props, void> {
     const LayoutFallback = getLayout(props.defaultLayout, props)
     const Layout = getLayout(page.type, props) || LayoutFallback
 
-    return (
-      <div>
-        {
-          !page.error && page.loading && PageLoading &&
-          <PageLoading />
-        }
-        {
-          !!page.error && !PageError &&
+    if (page.error) {
+      if (!PageError) {
+        return (
           <div style={ { "text-align": "center" } }>
             <h1>{ page.error }</h1>
             <p>{ page.errorText }</p>
           </div>
-        }
-        {
-          !!page.error && PageError &&
-          <PageError { ...page } />
-        }
-        {
-          !page.error && !page.loading && Layout &&
-          <Layout ref={ this.saveContentRef } { ...page } />
-        }
-      </div>
-    )
+        )
+      }
+      return <PageError { ...page } />
+    }
+    else {
+      if (page.loading && PageLoading) {
+        return <PageLoading />
+      }
+      else if (Layout) {
+        return <Layout ref={ this.saveContentRef } { ...page } />
+      }
+    }
+
+    return null
   }
 }
 
